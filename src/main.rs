@@ -66,14 +66,19 @@ async fn main() -> octocrab::Result<()> {
 
                     // see each commit and judge it for deletion
                     for commit in commits.unwrap() {
+                        // fix this ?
                         let commit_response = octo._get(commit.url.to_string(), None::<&()>).await?;
                         let commit_details: CommitDetails = commit_response.json().await.expect("Commit details are busted");
+
                         if commit_details.stats.additions != 0 && commit_details.stats.deletions != 0 {
                             let ratio = (commit_details.stats.deletions / commit_details.stats.additions) as f64;
                             if ratio > 1.0 {
                                 // this is where we tweet
                                 println!("DELETE ALL THE THINGS!  {:?}", commit_details);
                             }
+                        } else if commit_details.stats.additions == 0 && commit_details.stats.deletions > 0 {
+                            // this is where we tweet
+                            println!("NO ADDITION IS THE BEST!  {:?}", commit_details);
                         }
                     }
                     if seen.len() == TRACKING_CAPACITY {
